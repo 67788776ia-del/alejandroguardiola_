@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qüestionari de Llengua</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .correct { background-color: #10b981 !important; color: white; border-color: #059669 !important; }
+        .incorrect { background-color: #ef4444 !important; color: white; border-color: #dc2626 !important; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Pantalla Inicial -->
+        <div id="start-screen" class="p-8 text-center">
+            <div class="mb-6 inline-flex p-4 bg-indigo-100 rounded-full text-indigo-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" view6Box="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800 mb-4">Qüestionari de Llengua</h1>
+            <p class="text-slate-600 mb-8 text-lg">Posa a prova els teus coneixements de literatura, gramàtica i ortografia amb aquestes 25 preguntes.</p>
+            <button onclick="quiz.start()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-10 rounded-xl transition duration-200 text-lg shadow-lg">
+                Començar el test
+            </button>
+        </div>
+
+        <!-- Pantalla de Joc -->
+        <div id="quiz-screen" class="hidden p-6 sm:p-8">
+            <div class="flex justify-between items-center mb-6">
+                <span id="progress-text" class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Pregunta 1 de 25</span>
+                <span id="score-text" class="text-sm font-bold text-indigo-600">Punts: 0</span>
+            </div>
+            
+            <div class="w-full bg-slate-100 h-2 rounded-full mb-8 overflow-hidden">
+                <div id="progress-bar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 4%"></div>
+            </div>
+
+            <div id="question-container" class="mb-8">
+                <h2 id="question-text" class="text-xl sm:text-2xl font-bold text-slate-800 leading-tight">Carregant pregunta...</h2>
+            </div>
+
+            <div id="options-container" class="grid gap-3">
+                <!-- Les opcions es generen aquí -->
+            </div>
+
+            <div id="feedback" class="mt-6 text-center h-8 font-semibold transition-all opacity-0">
+                Correcte! 🎉
+            </div>
+
+            <button id="next-btn" onclick="quiz.next()" class="hidden w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl transition duration-200">
+                Següent pregunta
+            </button>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="result-screen" class="hidden p-8 text-center">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Test Finalitzat</h2>
+            <div class="my-8">
+                <div class="text-6xl font-black text-indigo-600 mb-2" id="final-score">0/25</div>
+                <p id="result-message" class="text-slate-600 text-lg">Bon intent!</p>
+            </div>
+            <button onclick="location.reload()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 px-8 rounded-xl transition duration-200">
+                Torna a intentar-ho
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "Quina és la diferència principal entre el tema i la trama en un text narratiu?", a: ["Són conceptes idèntics", "El tema és la veu i la trama el gènere", "La trama és la moral i el tema l'ordre", "El tema és la idea central i la trama el resum dels fets"], c: 3 },
+            { q: "Com es defineix un narrador de tipus 'editor'?", a: ["Només explica el que veu", "Relata uns fets trobats en un manuscrit", "Coneix tots els pensaments", "És un personatge secundari"], c: 1 },
+            { q: "Què implica el 'pacte narratiu' entre l'autor i el lector?", a: ["Llegir només fets reals", "Demostrar veritat científica", "Acceptar el que és fantàstic com a versemblant", "Sempre ha de ser en 1a persona"], c: 2 },
+            { q: "Quin recurs temporal s'utilitza quan el narrador avança fets que passaran més endavant?", a: ["Retrospecció", "Resum temporal", "Anticipació", "Ordre cronològic"], c: 2 },
+            { q: "Quina propietat textual s'encarrega que les frases apareguin com un tot lligat?", a: ["Coherència", "Adequació", "Correcció normativa", "Cohesió"], c: 3 },
+            { q: "Dins del registre col·loquial, quin element defineix la relació entre els interlocutors?", a: ["La formalitat extrema", "La relació social i emotiva informal", "Terminologia científica", "Canal escrit administratiu"], c: 1 },
+            { q: "Quin mode verbal expressa una acció com un fet real o objectiu?", a: ["Infinitiu", "Subjuntiu", "Indicatiu", "Imperatiu"], c: 2 },
+            { q: "Com es forma un temps compost en català?", a: ["Verb ser + participi", "Verb haver + participi", "Gerundi + participi", "Verb anar + infinitiu"], c: 1 },
+            { q: "Quin ús gramatical pot tenir el participi quan no forma part d'un temps compost?", a: ["Adverbi", "Nom", "Connector", "Adjectiu"], c: 3 },
+            { q: "Segons les indicacions del text, quina d'aquestes formes és incorrecta?", a: ["Poder", "Podent", "Poguer", "Incloure"], c: 2 },
+            { q: "Quina norma de dièresi s'aplica als verbs de la 3a conjugació (-ir) com 'conduir'?", a: ["El participi porta dièresi", "Infinitiu i gerundi porten dièresi", "Sempre porten dièresi", "No en porten mai"], c: 0 },
+            { q: "Què expressa la perífrasi verbal 'deure + infinitiu'?", a: ["Obligació", "Probabilitat", "Imminència", "Continuació"], c: 1 },
+            { q: "Darrere de vocal tònica al final de mot, quina grafia s'escriu generalment (oclusives)?", a: ["Depèn de la vocal següent", "S'escriu b, d, g si és curt", "S'escriu b, d, g", "S'escriu p, t, c"], c: 3 },
+            { q: "Com se sap si un mot que acaba en vocal àtona s'escriu amb 'a' o amb 'e'?", a: ["Tots acaben en 'e'", "Origen llatí o àrab", "Mots de la mateixa família", "Sempre 'e' per defecte"], c: 2 },
+            { q: "Quina és la grafia correcta per al pretèrit imperfet d'indicatiu de la 1a conjugació?", a: ["Sempre amb '-b-'", "Depèn de la vocal", "Sempre amb '-v-'", "v al singular i b al plural"], c: 2 },
+            { q: "Quina combinació de consonants és la correcta segons la norma general?", a: ["n + v i m + b", "m + b i m + v", "m + v i n + b", "n + v i m + p"], c: 0 },
+            { q: "Què són els sinònims geogràfics?", a: ["Paraules amb significat contrari", "S'escriuen igual, pronuncien diferent", "Designen mateixes realitats en zones diferents", "Noms de ciutats que canvien"], c: 2 },
+            { q: "Com era vist el 'mal d'amor' durant l'Edat Mitjana?", a: ["Font d'alegria", "Com una malaltia", "Prova de força física", "Contracte legal"], c: 1 },
+            { q: "Quin poeta es descriu com a 'pus extrem amador'?", a: ["Ausiàs March", "Salvat-Papasseit", "Sòfocles", "Joanot Martorell"], c: 0 },
+            { q: "Quin és el to predominant al poema 'Dóna'm la mà'?", a: ["Inseguretat", "Ràbia", "Calma i complicitat", "Tragèdia"], c: 2 },
+            { q: "Quina va ser la tràgica descoberta d'Edip?", a: ["Creont havia matat Laios", "El seu fill serà l'assassí", "Havia perdut la riquesa", "Va matar el pare i es va casar amb la mare"], c: 3 },
+            { q: "Dins de la mitologia, quin és el paper de la moira Àtropos?", a: ["Escriure decrets", "Tallar el fil de la vida", "Determinar la durada", "Teixir el fil"], c: 1 },
+            { q: "Quin narrador coneix els sentiments i pensaments íntims?", a: ["Testimoni", "Observador", "Omniscient", "Protagonista"], c: 2 },
+            { q: "Quina diferència l'estil directe de l'estil indirecte?", a: ["Directe passat, indirecte futur", "Només indirecte als diàlegs", "Directe textual, indirecte narrat", "Directe no verbs, indirecte sí"], c: 2 },
+            { q: "Quin és l'objectiu de la 'coherència' en un text?", a: ["Utilitzar connectors", "Organitzar contingut amb sentit global", "Sense faltes d'ortografia", "Adaptar al destinatari"], c: 1 }
+        ];
+
+        const quiz = {
+            currentIdx: 0,
+            score: 0,
+            answered: false,
+
+            start() {
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                this.renderQuestion();
+            },
+
+            renderQuestion() {
+                const q = questions[this.currentIdx];
+                this.answered = false;
+                
+                document.getElementById('progress-text').innerText = `Pregunta ${this.currentIdx + 1} de ${questions.length}`;
+                document.getElementById('progress-bar').style.width = `${((this.currentIdx + 1) / questions.length) * 100}%`;
+                document.getElementById('question-text').innerText = q.q;
+                document.getElementById('feedback').style.opacity = "0";
+                document.getElementById('next-btn').classList.add('hidden');
+
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+
+                q.a.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = "option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200 font-medium text-slate-700 flex items-center";
+                    btn.innerHTML = `<span class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-slate-100 mr-4 text-slate-500 font-bold text-sm">${String.fromCharCode(65 + i)}</span> ${opt}`;
+                    btn.onclick = () => this.checkAnswer(i, btn);
+                    container.appendChild(btn);
+                });
+            },
+
+            checkAnswer(idx, btn) {
+                if (this.answered) return;
+                this.answered = true;
+                
+                const q = questions[this.currentIdx];
+                const feedback = document.getElementById('feedback');
+                const allBtns = document.querySelectorAll('.option-btn');
+                
+                allBtns.forEach(b => b.disabled = true);
+
+                if (idx === q.c) {
+                    btn.classList.add('correct');
+                    this.score++;
+                    feedback.innerText = "Correcte! ✨";
+                    feedback.className = "mt-6 text-center h-8 font-bold text-emerald-600 opacity-100";
+                } else {
+                    btn.classList.add('incorrect');
+                    allBtns[q.c].classList.add('correct');
+                    feedback.innerText = "S'ha fallat... 😕";
+                    feedback.className = "mt-6 text-center h-8 font-bold text-red-500 opacity-100";
+                }
+
+                document.getElementById('score-text').innerText = `Punts: ${this.score}`;
+                document.getElementById('next-btn').classList.remove('hidden');
+            },
+
+            next() {
+                this.currentIdx++;
+                if (this.currentIdx < questions.length) {
+                    this.renderQuestion();
+                } else {
+                    this.showResults();
+                }
+            },
+
+            showResults() {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                document.getElementById('final-score').innerText = `${this.score}/${questions.length}`;
+                
+                const msg = document.getElementById('result-message');
+                const percent = (this.score / questions.length) * 100;
+                
+                if (percent === 100) msg.innerText = "Excel·lent! Ets un mestre del català! 🏆";
+                else if (percent >= 80) msg.innerText = "Molt bona nota! Gairebé perfecte! 🌟";
+                else if (percent >= 50) msg.innerText = "Ben fet, has aprovat! Continua així. 👍";
+                else msg.innerText = "Cal repassar una mica més els continguts. 📚";
+            }
+        };
+    </script>
+</body>
+</html>
